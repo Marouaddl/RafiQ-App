@@ -25,12 +25,16 @@ import Messages from '../pages/Messages';
 import Groups from '../pages/Groups';
 import Psychiatrists from '../pages/Psychiatrists';
 import Challenges from '../pages/Challenges';
+import Favoris from '../pages/Favoris';
+import Profile from '../pages/Profile'; // ✅ Import de la page Profile
 
 const SidebarWithAppbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState('Public');
   const [activeNav, setActiveNav] = useState('Accueil');
   const [expandedMenus, setExpandedMenus] = useState([]);
+  const [showFavoritesPage, setShowFavoritesPage] = useState(false);
+  const [showProfilePage, setShowProfilePage] = useState(false); // ✅ Nouvel état pour le profil
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -58,10 +62,15 @@ const SidebarWithAppbar = () => {
         { name: 'Rejoindre un groupe', icon: FiUsers, color: '#7D13C5' },
       ]
     },
-    { name: 'Favoris', icon: FiHeart },
+    { 
+      name: 'Favoris', 
+      icon: FiHeart,
+      action: 'showFavorites'
+    },
     { name: 'Mes rendez-vous', icon: FiCalendar },
   ];
 
+  // Navigation principale reste inchangée
   const navItems = [
     { name: 'Accueil', icon: FiHome },
     { name: 'Messages', icon: FiMessageSquare },
@@ -70,8 +79,46 @@ const SidebarWithAppbar = () => {
     { name: 'Défis', icon: FiAward },
   ];
 
-  // Composant pour afficher la page active
+  // ✅ Fonction pour gérer les actions du menu
+  const handleMenuAction = (item) => {
+    if (item.action === 'showFavorites') {
+      setShowFavoritesPage(true);
+      setShowProfilePage(false); // ✅ Désactiver le profil
+      setActiveMenu(item.name);
+      setMobileOpen(false);
+    } else {
+      setActiveMenu(item.name);
+      setShowFavoritesPage(false);
+      setShowProfilePage(false); // ✅ Désactiver le profil
+      setMobileOpen(false);
+    }
+  };
+
+  // ✅ Fonction pour afficher le profil
+  const handleShowProfile = () => {
+    setShowProfilePage(true);
+    setShowFavoritesPage(false); // ✅ Désactiver les favoris
+    setMobileOpen(false);
+  };
+
+  // ✅ Fonction pour retourner à la navigation normale
+  const handleBackToNormalNav = () => {
+    setShowProfilePage(false);
+    setShowFavoritesPage(false);
+  };
+
   const renderActivePage = () => {
+    // ✅ Afficher la page Profile si l'état est activé
+    if (showProfilePage) {
+      return <Profile />;
+    }
+
+    // ✅ Afficher la page Favoris si l'état est activé
+    if (showFavoritesPage) {
+      return <Favoris />;
+    }
+
+    // Navigation normale
     switch (activeNav) {
       case 'Accueil':
         return <Home />;
@@ -89,27 +136,27 @@ const SidebarWithAppbar = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50"> {/* ✅ BACKGROUND APPLIQUÉ ICI */}
-      {/* AppBar - Ultra compact */}
+    <div className="min-h-screen bg-gray-50">
+      {/* AppBar - Complètement responsive */}
       <div className="fixed top-0 left-0 right-0 h-12 bg-white border-b border-gray-200 shadow-sm z-50">
         <div className="flex items-center justify-between h-full px-3 lg:px-4">
           {/* Left section - Logo and mobile menu */}
           <div className="flex items-center space-x-2">
-            {/* Mobile menu button */}
+            {/* Mobile menu button - Toujours visible sur mobile */}
             <button 
               onClick={handleDrawerToggle}
-              className="lg:hidden p-1 rounded text-gray-600 hover:bg-gray-100"
+              className="p-1 rounded text-gray-600 hover:bg-gray-100"
             >
               <FiMenu className="text-base" />
             </button>
 
-            {/* Logo */}
+            {/* Logo - Toujours visible */}
             <div className="text-lg font-bold text-[#30A196]">
               RafiQ
             </div>
 
-            {/* Search bar */}
-            <div className="hidden md:flex items-center bg-gray-100 rounded-full px-2 py-1 w-64 border border-gray-300">
+            {/* Search bar - Visible sur tablette et desktop */}
+            <div className="hidden sm:flex items-center bg-gray-100 rounded-full px-2 py-1 w-40 md:w-64 border border-gray-300">
               <FiSearch className="text-gray-500 text-xs mr-1" />
               <input 
                 type="text" 
@@ -121,12 +168,15 @@ const SidebarWithAppbar = () => {
 
           {/* Right section - Navigation and user */}
           <div className="flex items-center space-x-2">
-            {/* Navigation links - hidden on mobile */}
+            {/* Navigation links - Visible uniquement sur desktop */}
             <div className="hidden lg:flex items-center space-x-0">
               {navItems.map((item, index) => (
                 <button
                   key={index}
-                  onClick={() => setActiveNav(item.name)}
+                  onClick={() => {
+                    setActiveNav(item.name);
+                    handleBackToNormalNav(); // ✅ Retour à la navigation normale
+                  }}
                   className={`flex items-center px-2 py-1 rounded-full text-[11px] font-medium transition-colors ${
                     activeNav === item.name 
                       ? 'bg-[#00796B] text-white' 
@@ -141,29 +191,65 @@ const SidebarWithAppbar = () => {
               ))}
             </div>
 
-            {/* Notification icon */}
+            {/* Mobile search button - Visible uniquement sur mobile */}
+            <button className="sm:hidden p-1 text-gray-600 hover:text-[#30A196]">
+              <FiSearch className="text-base" />
+            </button>
+
+            {/* Notification icon - Toujours visible */}
             <button className="p-1 text-gray-600 hover:text-[#30A196] relative">
               <FiBell className="text-base" />
               <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
             </button>
 
-            {/* User avatar */}
-            <div className="w-7 h-7 rounded-full border-2 border-[#30A196] cursor-pointer overflow-hidden">
+            {/* ✅ User avatar - Clic pour ouvrir le profil */}
+            <button 
+              onClick={handleShowProfile}
+              className="w-7 h-7 rounded-full border-2 border-[#30A196] cursor-pointer overflow-hidden hover:border-[#00796B] transition-colors"
+            >
               <img 
                 src="https://randomuser.me/api/portraits/men/41.jpg" 
                 alt="Ahmed Ali" 
                 className="w-full h-full object-cover"
               />
-            </div>
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="flex pt-12"> {/* ✅ AJOUT DE PADDING TOP POUR COMPENSER L'APPBAR FIXE */}
-        {/* Sidebar for desktop - Ultra narrow version */}
+      {/* Mobile Navigation Bar - En bas de l'écran sur mobile */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg lg:hidden z-40">
+        <div className="flex justify-around items-center h-14">
+          {navItems.map((item, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setActiveNav(item.name);
+                handleBackToNormalNav(); // ✅ Retour à la navigation normale
+              }}
+              className={`flex flex-col items-center justify-center p-1 flex-1 transition-colors ${
+                activeNav === item.name 
+                  ? 'text-[#00796B]' 
+                  : 'text-gray-600'
+              }`}
+            >
+              <item.icon className={`text-lg mb-0.5 ${
+                activeNav === item.name ? 'text-[#00796B]' : 'text-gray-500'
+              }`} />
+              <span className="text-[10px] font-medium">{item.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex pt-12 pb-14 lg:pb-0">
+        {/* Sidebar for desktop */}
         <div className="hidden lg:flex flex-col w-40 bg-white border-r border-gray-200 fixed top-12 bottom-0 left-0 z-40">
-          {/* User profile - Micro compact */}
-          <div className="p-2 text-center border-b border-gray-200">
+          {/* User profile avec clic pour ouvrir le profil */}
+          <button 
+            onClick={handleShowProfile}
+            className="p-2 text-center border-b border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer"
+          >
             <div className="w-8 h-8 rounded-full border-2 border-[#30A196] mx-auto mb-1 overflow-hidden">
               <img 
                 src="https://randomuser.me/api/portraits/men/41.jpg" 
@@ -173,9 +259,9 @@ const SidebarWithAppbar = () => {
             </div>
             <h3 className="font-semibold text-gray-900 text-[10px]">Ahmed Ali</h3>
             <p className="text-[10px] text-gray-500">3 mois</p>
-          </div>
+          </button>
 
-          {/* Navigation menu - Ultra compact */}
+          {/* Navigation menu */}
           <div className="flex-1 p-1">
             <nav className="space-y-0">
               {menuItems.map((item, index) => (
@@ -185,7 +271,7 @@ const SidebarWithAppbar = () => {
                       if (item.hasSubmenu) {
                         toggleSubmenu(item.name);
                       } else {
-                        setActiveMenu(item.name);
+                        handleMenuAction(item);
                       }
                     }}
                     className={`w-full flex items-center justify-between p-1.5 rounded text-left transition-colors ${
@@ -211,7 +297,7 @@ const SidebarWithAppbar = () => {
                     )}
                   </button>
 
-                  {/* Submenu - Ultra compact */}
+                  {/* Submenu */}
                   {item.hasSubmenu && expandedMenus.includes(item.name) && (
                     <div className="ml-3 mt-0 space-y-0">
                       {item.submenu.map((subItem, subIndex) => (
@@ -245,8 +331,8 @@ const SidebarWithAppbar = () => {
         </div>
 
         {/* Main content */}
-        <div className="flex-1 lg:ml-40 min-h-[calc(100vh-3rem)]"> {/* ✅ HAUTEUR CALCULÉE */}
-          <div className="p-3">
+        <div className="flex-1 lg:ml-40 min-h-[calc(100vh-3rem)]"> 
+          <div className="p-3 h-full">
             {renderActivePage()}
           </div>
         </div>
@@ -275,8 +361,14 @@ const SidebarWithAppbar = () => {
                 </button>
               </div>
 
-              {/* User profile */}
-              <div className="p-3 text-center border-b border-gray-200">
+              {/* User profile avec clic pour ouvrir le profil */}
+              <button 
+                onClick={() => {
+                  handleShowProfile();
+                  setMobileOpen(false);
+                }}
+                className="p-3 text-center border-b border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer"
+              >
                 <div className="w-12 h-12 rounded-full border-2 border-[#30A196] mx-auto mb-2 overflow-hidden">
                   <img 
                     src="https://randomuser.me/api/portraits/men/41.jpg" 
@@ -286,7 +378,7 @@ const SidebarWithAppbar = () => {
                 </div>
                 <h3 className="font-semibold text-gray-900 text-xs">Ahmed Ali</h3>
                 <p className="text-[10px] text-gray-500 mt-0.5">Membre depuis 3 mois</p>
-              </div>
+              </button>
 
               {/* Navigation menu */}
               <div className="flex-1 p-2">
@@ -298,8 +390,7 @@ const SidebarWithAppbar = () => {
                           if (item.hasSubmenu) {
                             toggleSubmenu(item.name);
                           } else {
-                            setActiveMenu(item.name);
-                            setMobileOpen(false);
+                            handleMenuAction(item);
                           }
                         }}
                         className={`w-full flex items-center justify-between p-1.5 rounded text-left transition-colors ${

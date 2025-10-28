@@ -5,7 +5,7 @@ import RightSidebar from "../Components/RightSidebar";
 import PostModal from "../Components/PostModal"
 
 const Home = () => {
-  const [posts, setPosts] = useState([ // تغيير post إلى posts
+  const [posts, setPosts] = useState([
     {
       id: 1,
       user: {
@@ -71,7 +71,6 @@ const Home = () => {
 
   const [showPostModal, setShowModal] = useState(false);
 
-  // وظيفة إنشاء منشور جديد
   const handleCreatePost = (newPostData) => {
     const newPostObj = {
       id: Date.now(),
@@ -105,7 +104,7 @@ const Home = () => {
     ));
   };
 
-  const handleSave = (postId) => { // تم إضافة const
+  const handleSave = (postId) => {
     setPosts(posts.map(post =>
       post.id === postId
         ? { ...post, isSaved: !post.isSaved }
@@ -169,12 +168,12 @@ const Home = () => {
     <div className="flex">
       {/* المحتوى الرئيسي */}
       <div className="flex-1 flex justify-center">
-        <div className="max-w-2xl w-full mx-4">
-          <div className="space-y-3">
+        <div className="max-w-2xl w-full mx-2 sm:mx-4">
+          <div className="space-y-3 sm:space-y-4">
             <CreatePost onShowModal={() => setShowModal(true)} />
 
             {/* قائمة المنشورات */}
-            {posts.map((post) => ( // تغيير post إلى posts و post إلى Post
+            {posts.map((post) => (
               <Post
                 key={post.id}
                 post={post}
@@ -189,8 +188,10 @@ const Home = () => {
         </div>
       </div>
 
-      {/* الشريط الجانبي الأيمن */}
-      <RightSidebar />
+      {/* الشريط الجانبي الأيمن - Caché sur mobile */}
+      <div className="hidden lg:block">
+        <RightSidebar />
+      </div>
 
       {/* نافذة إنشاء المنشور */}
       {showPostModal && (
