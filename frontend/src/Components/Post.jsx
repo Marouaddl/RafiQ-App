@@ -1,52 +1,53 @@
-import React, { useState } from 'react';
-import { FiHeart, FiMessageCircle, FiShare2, FiMoreHorizontal, FiBookmark, FiSend } from 'react-icons/fi';
-import PostHeader from './PostHeader';
-import PostStats from './PostStats';
-import PostActions from './PostActions';
-import CommentsSection from './CommentsSection';
+import React, { useState } from "react";
+import PostHeader from "./PostHeader";
+import PostStats from "./PostStats";
+import PostActions from "./PostActions";
+import CommentsSection from "./CommentsSection";
 
-const Post = ({ post, onLike, onSave, onShare, onAddComment, onLikeComment }) => {
+const Post = ({
+  post,
+  onLike,
+  onSave,
+  onShare,
+  onAddComment,
+  onLikeComment,
+  onDelete,
+  canDelete,
+}) => {
   const [showComments, setShowComments] = useState(false);
-  const [newComment, setNewComment] = useState('');
+  const [newComment, setNewComment] = useState("");
 
-  const toggleComments = () => {
-    setShowComments(!showComments);
-  };
+  const toggleComments = () => setShowComments(!showComments);
 
   const handleAddComment = () => {
     if (newComment.trim()) {
       onAddComment(post.id, newComment);
-      setNewComment('');
+      setNewComment("");
     }
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 mb-3 sm:mb-4">
-    
-      <PostHeader post={post} />
-      
-      
-      <div className="p-3 sm:p-4">
-        <p className="mt-2 text-xs sm:text-sm text-gray-800 leading-relaxed break-words">
+    <div className="bg-white rounded-lg border border-gray-200 mb-2 sm:mb-3 overflow-hidden w-full min-w-0">
+      <PostHeader post={post} onDelete={onDelete} canDelete={canDelete} />
+
+      <div className="px-2.5 sm:px-4 pb-2">
+        <p className="text-[11px] sm:text-sm text-gray-800 leading-relaxed break-words whitespace-pre-wrap">
           {post.content}
         </p>
-        
-        
+
         {post.image && (
-          <div className="mt-3 sm:mt-4 relative">
-            <img 
-              src={post.image} 
-              alt="Statut" 
-              className="rounded-lg w-full h-48 sm:h-56 object-cover"
+          <div className="mt-2 sm:mt-3 relative">
+            <img
+              src={post.image}
+              alt="Publication"
+              className="rounded-lg w-full max-h-48 sm:max-h-72 object-cover"
             />
           </div>
         )}
       </div>
 
-     
       <PostStats post={post} />
 
-      {/* Actions */}
       <PostActions
         post={post}
         onLike={onLike}
@@ -55,7 +56,6 @@ const Post = ({ post, onLike, onSave, onShare, onAddComment, onLikeComment }) =>
         onToggleComments={toggleComments}
       />
 
-      {/* Section commentaires */}
       {showComments && (
         <CommentsSection
           post={post}

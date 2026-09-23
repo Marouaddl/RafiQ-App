@@ -2,7 +2,10 @@ import React, { useState } from "react";
 import { FiMail, FiLock, FiUser, FiArrowRight, FiEye, FiEyeOff } from "react-icons/fi";
 import img1 from "../assets/img1.png";
 
-export default function SignUp({ onNavigateToLogin }) {
+export default function SignUp({
+  onNavigateToLogin,
+  onSignUpSuccess,
+}) {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -21,19 +24,78 @@ export default function SignUp({ onNavigateToLogin }) {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log("Inscription réussie:", formData);
-    } catch (error) {
-      console.error("Erreur:", error);
-    } finally {
-      setIsLoading(false);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // Validation type de compte
+  if (!formData.accountType) {
+    alert("Choisissez un type de compte (Psychiatre ou Rafiq)");
+    return;
+  }
+  if (formData.accountType === "psychiatre" && !formData.registrationNumber.trim()) {
+    alert("Le numéro CNOM est obligatoire pour un psychiatre");
+    return;
+  }
+  if (!formData.username.trim() || formData.username.trim().length < 3) {
+    alert("Nom d'utilisateur : au moins 3 caractères");
+    return;
+  }
+  if (formData.password.length < 6) {
+    alert("Mot de passe : au moins 6 caractères");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    // role interne utilisé dans toute l'app
+    const role =
+      formData.accountType === "psychiatre" ? "psychiatre" : "patient";
+
+    const user = {
+      id: Date.now(),
+      name: formData.username.trim(),
+      email: formData.email.trim().toLowerCase(),
+      role, // "patient" | "psychiatre"
+      accountType: formData.accountType, // "rafiq" | "psychiatre" (label UI)
+      registrationNumber:
+        formData.accountType === "psychiatre"
+          ? formData.registrationNumber.trim()
+          : null,
+      loggedInAt: new Date().toISOString(),
+    };
+
+    // Session courante
+    localStorage.setItem("rafiq_auth", JSON.stringify(user));
+
+    // Registre des comptes (pour la connexion plus tard)
+    const raw = localStorage.getItem("rafiq_users");
+    const users = raw ? JSON.parse(raw) : [];
+    const without = users.filter((u) => u.email !== user.email);
+    without.push({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      accountType: user.accountType,
+      registrationNumber: user.registrationNumber,
+      password: formData.password, // démo only — jamais en prod
+    });
+    localStorage.setItem("rafiq_users", JSON.stringify(without));
+
+    // Important : passer l'user au parent
+    if (onSignUpSuccess) {
+      onSignUpSuccess(user);
     }
-  };
+  } catch (error) {
+    console.error("Erreur:", error);
+    alert("Une erreur est survenue");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);

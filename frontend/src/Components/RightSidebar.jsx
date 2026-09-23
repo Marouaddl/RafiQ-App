@@ -1,25 +1,63 @@
-import React from 'react';
-import { FiUser, FiUsers, FiPhone } from 'react-icons/fi';
+import React from "react";
+import { FiUser, FiUsers, FiPhone } from "react-icons/fi";
 
-const RightSidebar = () => {
+const RightSidebar = ({ groups: groupsProp }) => {
   const doctors = [
-    { name: 'Dr. Sophie Martin', specialty: 'Psychiatrie', online: true, avatar: 'https://randomuser.me/api/portraits/women/41.jpg' },
-    { name: 'Dr. Pierre Dubois', specialty: 'Thérapie Cognitive', online: false, avatar: 'https://randomuser.me/api/portraits/men/32.jpg' },
-    { name: 'Dr. Marie Lambert', specialty: 'Stress et Anxiété', online: true, avatar: 'https://randomuser.me/api/portraits/women/28.jpg' }
+    {
+      name: "Dr. Sophie Martin",
+      specialty: "Psychiatrie",
+      online: true,
+      avatar: "https://randomuser.me/api/portraits/women/41.jpg",
+    },
+    {
+      name: "Dr. Pierre Dubois",
+      specialty: "Thérapie Cognitive",
+      online: false,
+      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    },
+    {
+      name: "Dr. Marie Lambert",
+      specialty: "Stress et Anxiété",
+      online: true,
+      avatar: "https://randomuser.me/api/portraits/women/28.jpg",
+    },
   ];
 
-  const groups = [
-    { name: 'Gestion Stress', members: '245', active: true, avatar: 'https://randomuser.me/api/portraits/women/32.jpg' },
-    { name: 'Méditation', members: '189', active: false, avatar: 'https://randomuser.me/api/portraits/women/25.jpg' },
-    { name: 'Soutien Anxiété', members: '156', active: true, avatar: 'https://randomuser.me/api/portraits/men/29.jpg' }
-  ];
+  // Groupes du state central (si fournis), sinon fallback
+  const groups =
+    groupsProp && groupsProp.length > 0
+      ? groupsProp.slice(0, 5).map((g) => ({
+          name: g.name,
+          members: String(g.members),
+          active: true,
+          avatar: g.image,
+        }))
+      : [
+          {
+            name: "Gestion Stress",
+            members: "245",
+            active: true,
+            avatar: "https://randomuser.me/api/portraits/women/32.jpg",
+          },
+          {
+            name: "Méditation",
+            members: "189",
+            active: false,
+            avatar: "https://randomuser.me/api/portraits/women/25.jpg",
+          },
+          {
+            name: "Soutien Anxiété",
+            members: "156",
+            active: true,
+            avatar: "https://randomuser.me/api/portraits/men/29.jpg",
+          },
+        ];
 
   const emergencyContacts = [
-    { name: 'Urgences', number: '15', available: true },
-    { name: 'SOS Médecins', number: '36 24', available: true },
-    { name: 'Prévention Suicide', number: '3114', available: true }
+    { name: "Urgences", number: "15", available: true },
+    { name: "SOS Médecins", number: "36 24", available: true },
+    { name: "Prévention Suicide", number: "3114", available: true },
   ];
-
   return (
     <div className="w-56 mr-0">
       <div className="space-y-3 sticky top-16">

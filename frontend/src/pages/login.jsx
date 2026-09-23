@@ -4,7 +4,10 @@ import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight } from "react-icons/fi";
 // ✅ importer correctement l'image
 import img1 from "../assets/img1.png";
 
-export default function Login({ onNavigateToSignUp }) {
+export default function Login({
+  onNavigateToSignUp,
+  onLoginSuccess,
+}) {
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -22,12 +25,55 @@ export default function Login({ onNavigateToSignUp }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log("Connexion réussie:", formData);
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const email = formData.email.trim().toLowerCase();
+      let user = null;
+
+      const raw = localStorage.getItem("rafiq_users");
+      const users = raw ? JSON.parse(raw) : [];
+      const found = users.find((u) => u.email === email);
+
+      if (found) {
+        // Compte déjà inscrit → vérifier le mot de passe
+        if (found.password && found.password !== formData.password) {
+          alert("Email ou mot de passe incorrect");
+          setIsLoading(false);
+          return;
+        }
+        user = {
+          id: found.id,
+          name: found.name,
+          email: found.email,
+          role: found.role || "patient", // "patient" | "psychiatre"
+          accountType: found.accountType,
+          registrationNumber: found.registrationNumber || null,
+          loggedInAt: new Date().toISOString(),
+        };
+      } else {
+        // Pas de compte enregistré → connexion démo en patient
+        user = {
+          id: Date.now(),
+          name: email.split("@")[0],
+          email,
+          role: "patient",
+          accountType: "rafiq",
+          loggedInAt: new Date().toISOString(),
+        };
+      }
+
+      // Session
+      localStorage.setItem("rafiq_auth", JSON.stringify(user));
+
+      // Important : passer l'user à App
+      if (onLoginSuccess) {
+        onLoginSuccess(user);
+      }
     } catch (error) {
       console.error("Erreur:", error);
+      alert("Une erreur est survenue");
     } finally {
       setIsLoading(false);
     }
@@ -119,8 +165,8 @@ export default function Login({ onNavigateToSignUp }) {
 
             {/* Lien mot de passe oublié */}
             <div className="flex justify-end transform hover:translate-x-1 transition-transform duration-300">
-              <a 
-                href="#" 
+              <a
+                href="#"
                 className="text-sm text-[#00796B] font-medium hover:text-[#00695C] transition-colors duration-300 flex items-center space-x-1"
               >
                 <span>Mot de passe oublié ?</span>
@@ -136,7 +182,7 @@ export default function Login({ onNavigateToSignUp }) {
             >
               {/* Effet de brillance */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              
+
               {isLoading ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -154,7 +200,7 @@ export default function Login({ onNavigateToSignUp }) {
             <div className="text-center transform hover:scale-105 transition-transform duration-300">
               <p className="text-gray-600 text-sm">
                 Vous n'avez pas de compte ?{" "}
-                <button 
+                <button
                   type="button"
                   onClick={onNavigateToSignUp}
                   className="text-[#00796B] font-medium hover:text-[#00695C] transition-colors duration-300 inline-flex items-center space-x-1"
@@ -182,7 +228,7 @@ export default function Login({ onNavigateToSignUp }) {
           <div className="relative group cursor-pointer">
             {/* Effet de halo */}
             <div className="absolute -inset-4 bg-white/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-1000 opacity-0 group-hover:opacity-100 animate-pulse"></div>
-            
+
             {/* Image avec effet 3D */}
             <div className="relative transform transition-all duration-700 group-hover:scale-105 group-hover:-translate-y-2">
               <img
@@ -194,9 +240,9 @@ export default function Login({ onNavigateToSignUp }) {
                   transformStyle: 'preserve-3d'
                 }}
               />
-              
+
               {/* Reflet 3D */}
-              <div 
+              <div
                 className="absolute inset-0 bg-gradient-to-t from-white/30 to-transparent rounded-lg mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 style={{
                   transform: 'perspective(1000px) rotateY(-5deg) rotateX(5deg) translateZ(10px)',
@@ -204,7 +250,7 @@ export default function Login({ onNavigateToSignUp }) {
               ></div>
 
               {/* Ombre portée 3D */}
-              <div 
+              <div
                 className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-56 h-4 bg-black/20 rounded-full blur-lg group-hover:blur-xl transition-all duration-500"
                 style={{
                   transform: 'perspective(1000px) rotateX(75deg) translateZ(-50px)',
@@ -226,7 +272,7 @@ export default function Login({ onNavigateToSignUp }) {
           {/* Points d'information animés */}
           <div className="mt-6 flex flex-wrap justify-center gap-4 animate-stagger">
             {['Chiffrement SSL', 'Authentification 2FA', 'Protection des données'].map((item, index) => (
-              <div 
+              <div
                 key={item}
                 className="flex items-center space-x-2 text-white/90 transform hover:scale-110 transition-transform duration-300"
                 style={{ animationDelay: `${index * 200}ms` }}
